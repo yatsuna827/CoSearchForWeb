@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    <GHPages>true</GHPages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.1" PrivateAssets="all" />
+    <PackageReference Include="PokemonCoRNGLibrary" Version="1.8.1" />
+    <PackageReference Include="PokemonPRNG.LCG32.Core" Version="1.0.0" />
+    <PackageReference Include="PokemonPRNG.LCG32.GCLCG" Version="1.0.0" />
+    <PackageReference Include="PokemonStandardLibrary" Version="1.4.0" />
+    <PackageReference Include="PokemonStandardLibrary.Gen3" Version="1.2.0" />
+    <PackageReference Include="PublishSPAforGitHubPages.Build" Version="2.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+  </ItemGroup>
+
+</Project>
