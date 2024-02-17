@@ -1,7 +1,155 @@
 ﻿@page "/"
 
+@using PokemonCoRNGLibrary;
+@using PokemonCoRNGLibrary.AdvanceSource;
+@using PokemonCoRNGLibrary.ProvidedData;
+
+@using PokemonStandardLibrary;
+@using PokemonStandardLibrary.CommonExtension;
+
+@using CoSearchForWeb.Components
+
+@using BlazorWorker.BackgroundServiceFactory
+@using BlazorWorker.Core
+@inject IWorkerFactory workerFactory
+
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>存在する個体から探す</h1>
 
-Welcome to your new app.
+<div>
+    seed
+    <SeedBox @bind-Seed=seed />
+</div>
+<div>
+    ダークポケモン
+    <InputSelect @bind-Value="pokeName">
+        @foreach (var name in darkPokemons) {
+            <option>@name</option>
+        }
+    </InputSelect>
+</div>
+<div>
+    H
+    <input type="number" min="0" max="31" @bind-value="hMin" />
+    ~
+    <input type="number" min="0" max="31" @bind-value="hMax" />
+</div>
+<div>
+    A
+    <input type="number" min="0" max="31" @bind-value="aMin" />
+    ~
+    <input type="number" min="0" max="31" @bind-value="aMax" />
+</div>
+<div>
+    B
+    <input type="number" min="0" max="31" @bind-value="bMin" />
+    ~
+    <input type="number" min="0" max="31" @bind-value="bMax" />
+</div>
+<div>
+    C
+    <input type="number" min="0" max="31" @bind-value="cMin" />
+    ~
+    <input type="number" min="0" max="31" @bind-value="cMax" />
+</div>
+<div>
+    D
+    <input type="number" min="0" max="31" @bind-value="dMin" />
+    ~
+    <input type="number" min="0" max="31" @bind-value="dMax" />
+</div>
+<div>
+    S
+    <input type="number" min="0" max="31" @bind-value="sMin" />
+    ~
+    <input type="number" min="0" max="31" @bind-value="sMax" />
+</div>
+<button @onclick="OnCliecked" disabled="@(Searching)">@(Searching ? "検索中..." : "検索")</button>
+
+<div>
+    @(Page + 1) / @(Pages + 1)
+</div>
+<button @onclick="() => { if (Page > 0) Page--;}">←</button>
+<button @onclick="() => { if (Page < Pages) Page++;}">→</button>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Seed</th>
+            <th>Nature</th>
+            <th>IVs</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var (seed, pid, ivs) in result.Skip(Page * ItemsPerPage).Take(ItemsPerPage))
+        {
+            <tr>
+                <td>@($"{seed:X8}")</td>
+                <td>@(((Nature)(pid % 25)).ToJapanese())</td>
+                <td>@(string.Join("-", ivs))</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    const int ItemsPerPage = 10;
+
+    bool Searching { get; set; } = false;
+
+    string seed { get; set; } = "BEEFBEEF";
+    uint hMin { get; set; } = 31;
+    uint hMax { get; set; } = 31;
+    uint aMin { get; set; } = 0;
+    uint aMax { get; set; } = 31;
+    uint bMin { get; set; } = 31;
+    uint bMax { get; set; } = 31;
+    uint cMin { get; set; } = 31;
+    uint cMax { get; set; } = 31;
+    uint dMin { get; set; } = 31;
+    uint dMax { get; set; } = 31;
+    uint sMin { get; set; } = 31;
+    uint sMax { get; set; } = 31;
+
+    string pokeName { get; set; } = "スイクン";
+
+    SearchResult[] result = Array.Empty<SearchResult>();
+    int Page { get; set; } = 0;
+    int Pages { get => result.Length / ItemsPerPage; }
+
+    string[] darkPokemons = ProvidedCoDarkPokemonData.GetAll().SkipLast(3).Select(_ => _.Slot.Species.Name).ToArray();
+
+    async Task OnCliecked()
+    {
+        if (Searching) return;
+
+        // ローカルスコープにコピーしてこないとシリアライズ時にエラーになる
+        var name = this.pokeName;
+
+        var hMin = this.hMin;
+        var aMin = this.aMin;
+        var bMin = this.bMin;
+        var cMin = this.cMin;
+        var dMin = this.dMin;
+        var sMin = this.sMin;
+
+        var hMax = this.hMax;
+        var aMax = this.aMax;
+        var bMax = this.bMax;
+        var cMax = this.cMax;
+        var dMax = this.dMax;
+        var sMax = this.sMax;
+
+        Searching = true;
+        StateHasChanged();
+
+        var worker = await workerFactory.CreateAsync();
+        var service = await worker.CreateBackgroundServiceAsync<SearchService>();
+
+        this.result = await service.RunAsync(s => s.Search(name, hMin, hMax, aMin, aMax, bMin, bMax, cMin, cMax, dMin, dMax, sMin, sMax));
+
+        Searching = false;
+        StateHasChanged();
+    }
+}

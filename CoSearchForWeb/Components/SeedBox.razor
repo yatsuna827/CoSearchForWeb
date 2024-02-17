@@ -1,0 +1,14 @@
+﻿<input type="text" pattern="[0-9a-fA-F]{1,8}" @bind:get="Seed" @bind:set="OnSeedChanged" />
+
+@code {
+    [Parameter, EditorRequired]
+    public required string Seed { get; set; }
+
+    [Parameter]
+    public EventCallback<string?>? SeedChanged { get; set; } = null;
+
+    private void OnSeedChanged(string? value)
+    {
+        SeedChanged?.InvokeAsync(value);
+    }
+}
